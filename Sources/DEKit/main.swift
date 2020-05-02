@@ -38,11 +38,11 @@ struct FileEvent {
 }
 
 extension FileEvent {
-    enum EventType: String {
+    enum EventType {
         case write
         case delete
-        case renamed
-        case moved
+        case renamed(oldName: String)
+        case moved(oldURL: URL)
         case newFile
         case error
     }
@@ -50,15 +50,50 @@ extension FileEvent {
 
 extension FileEvent: CustomStringConvertible {
     var description: String {
-        """
-        
-        🔔 Notification at \(when)
-        
-        📄 file: \(fileName)
-        📁 location: \(fileURL.path)
-        🚩 types: \(type)
-        \(checksum != nil ? "🧮 checksum: \(checksum!)" : "")
-        """
+        switch type {
+        case .write:
+            return """
+            
+            🔔 WRITE at \(when)
+                📄 filename: \(fileName)
+                📁 location: \(fileURL.path)
+                🧮 checksum: \(checksum!)
+            """
+        case .delete:
+            return """
+            
+            🔔 DELETE at \(when)
+                📄 filename: \(fileName)
+                📁 location: \(fileURL.path)
+            """
+        case .renamed(let oldName):
+            return """
+            
+            🔔 RENAMED at \(when)
+                📄 old filename: \(oldName)
+                🆕 new filename: \(fileName)
+                📁 location: \(fileURL.path)
+                🧮 checksum: \(checksum!)
+            """
+        case .moved(let oldLocation):
+            return """
+            
+            🔔 MOVED at \(when)
+                📄 filename: \(fileName)
+                📁 old location: \(oldLocation.path)
+                🆕 new location: \(fileURL.path)
+            """
+        case .newFile:
+            return """
+            
+            🔔 NEW FILE at \(when)
+                📄 filename: \(fileName)
+                📁 location: \(fileURL.path)
+                🧮 checksum: \(checksum!)
+            """
+        case .error:
+            return ""
+        }
     }
 }
 
@@ -242,9 +277,9 @@ public class DirectoryEvents {
         if flag.contains(.rename) {
             let newFileURL = pathURL(for: descriptor)
             if newFileURL.deletingLastPathComponent() == fileURL.deletingLastPathComponent() {
-                eventType = .renamed
+                eventType = .renamed(oldName: fileURL.lastPathComponent)
             } else {
-                eventType = .moved
+                eventType = .moved(oldURL: fileURL)
             }
             watchedFiles[descriptor] = newFileURL
             fileURL = newFileURL
