@@ -11,7 +11,6 @@ struct FilterFlag: OptionSet {
     
     let rawValue: RawValue
     
-    static let notSpecified = FilterFlag([])
     static let write = FilterFlag(rawValue: UInt32(NOTE_WRITE))
     static let delete = FilterFlag(rawValue: UInt32(NOTE_DELETE))
     static let rename = FilterFlag(rawValue: UInt32(NOTE_RENAME))
