@@ -32,6 +32,7 @@ public class DirectoryEvents {
         kernelQueue = kqueue()
         guard kernelQueue >= 0 else { throw "⛔️ Failed to create kernel queue" }
         try watchDirectory(at: directoryPath)
+        events.async(execute: fileEventsWatcher)
     }
 
     deinit {
@@ -78,7 +79,6 @@ public class DirectoryEvents {
         }
         createEventAtKernelQueue(from: fileDescriptor)
         watchedFiles[fileDescriptor] = pathURL
-        events.async(execute: fileEventsWatcher)
         print("\n👁 \(pathURL.lastPathComponent) is now watched...")
     }
     
@@ -118,12 +118,7 @@ public class DirectoryEvents {
             let amountOfEvents = kevent(kernelQueue, nil, 0, &event, 1, &timeout)
             guard amountOfEvents > 0 && event.filter == EVFILT_VNODE && event.fflags > 0
                 else { continue }
-            let flag = handleResult(of: event)
-            guard flag.contains(.delete) else { continue }
-            let fileDescriptor = FileDescriptor(event.ident)
-            close(fileDescriptor)
-            watchedFiles[fileDescriptor] = nil
-            break
+            handleResult(of: event)
         }
     }
     
@@ -154,18 +149,18 @@ public class DirectoryEvents {
         }
     }
     
-    private func handleResult(of event: kevent) -> FilterFlag {
+    private func handleResult(of event: kevent) {
         
         let descriptor = FileDescriptor(event.ident)
         let flag = FilterFlag(rawValue: UInt32(event.fflags))
         
         if descriptor == watchedDirectory {
-            guard flag.contains(.write) else { return .notSpecified }
+            guard flag.contains(.write) else { return }
             checkNewFiles(at: descriptor)
-            return .notSpecified
+            return
         }
         
-        guard var fileURL = watchedFiles[descriptor] else { return .notSpecified }
+        guard var fileURL = watchedFiles[descriptor] else { return }
         
         var checksum: String?
         var eventType: FileEvent.EventType = .error
@@ -196,6 +191,5 @@ public class DirectoryEvents {
                 checksum: checksum
             )
         )
-        return flag
     }
 }
