@@ -128,8 +128,8 @@ public class DirectoryEvents {
     
     private func filesURLs(from directory: URL) throws -> [URL]  {
         return try fileManager
-            .contentsOfDirectory(atPath: directory.path)
-            .map { directory.appendingPathComponent($0) }
+            .contentsOfDirectory(at: directory, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+            .map { $0 }
     }
     
     private func openForEventsAndGetDescriptor(at pathURL: URL) -> FileDescriptor {
@@ -145,7 +145,7 @@ public class DirectoryEvents {
         createEventAtKernelQueue(from: fileDescriptor)
         watchedFiles[fileDescriptor] = pathURL
         events.async(execute: fileEventsWatcher)
-        print("👁 \(pathURL.lastPathComponent) is now watched...")
+        print("\n👁 \(pathURL.lastPathComponent) is now watched...")
     }
     
     private func createEventAtKernelQueue(from descriptor: FileDescriptor) {
