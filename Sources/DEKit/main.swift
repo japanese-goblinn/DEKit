@@ -241,13 +241,13 @@ public class DirectoryEvents {
         }
         if flag.contains(.rename) {
             let newFileURL = pathURL(for: descriptor)
-            if newFileURL == fileURL {
+            if newFileURL.deletingLastPathComponent() == fileURL.deletingLastPathComponent() {
                 eventType = .renamed
             } else {
                 eventType = .moved
-                watchedFiles[descriptor] = newFileURL
-                fileURL = newFileURL
             }
+            watchedFiles[descriptor] = newFileURL
+            fileURL = newFileURL
             calculateChecksum(&checksum, of: fileURL)
         }
         if flag.contains(.write) {
