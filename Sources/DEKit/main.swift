@@ -113,7 +113,7 @@ public class DirectoryEvents {
         closeWatched()
         watchedFiles.removeAll()
         let directoryURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(path)
-        guard isDirectory(directoryURL) else { throw "⛔️ Not a directory" }
+        try checkPath(directoryURL)
         let descriptor = openForEventsAndGetDescriptor(at: directoryURL)
         guard descriptor > 0 else { throw "⛔️ Directory not found" }
         watchedDirectory = descriptor
@@ -122,16 +122,15 @@ public class DirectoryEvents {
     
     private func startReceivingChanges(at directory: URL) throws {
         try fileManager.contentsOfDirectory(atPath: directory.path).forEach {
-            watchEvents(at: directory.appendingPathComponent($0))
+            addToWatch(at: directory.appendingPathComponent($0))
         }
     }
     
     private func openForEventsAndGetDescriptor(at pathURL: URL) -> FileDescriptor {
-        let descriptor = open(fileManager.fileSystemRepresentation(withPath: pathURL.path), O_EVTONLY)
-        return descriptor
+        return open(fileManager.fileSystemRepresentation(withPath: pathURL.path), O_EVTONLY)
     }
         
-    private func watchEvents(at pathURL: URL) {
+    private func addToWatch(at pathURL: URL) {
         let fileDescriptor = openForEventsAndGetDescriptor(at: pathURL)
         guard fileDescriptor > 0 else {
             print("⛔️ \(pathURL.lastPathComponent) can't be watched due to internal error")
@@ -155,10 +154,15 @@ public class DirectoryEvents {
         kevent(kernelQueue, &queueEvent, 1, nil, 0, nil)
     }
         
-    private func isDirectory(_ url: URL) -> Bool {
+    private func checkPath(_ url: URL) throws {
         var isDirectory: ObjCBool = false
         let fileExists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
-        return fileExists && isDirectory.boolValue
+        if !fileExists {
+            throw "⛔️ Invalid path"
+        }
+        if !isDirectory.boolValue {
+            throw "⛔️ Not a directory"
+        }
     }
     
     private func pathURL(for descriptor: FileDescriptor) -> URL {
