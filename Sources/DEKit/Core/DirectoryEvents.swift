@@ -1,116 +1,15 @@
+//
+//  DirectoryEvents.swift
+//  DEKit
+//
+//  Created by Kirill Gorbachyonok on 5/3/20.
+//
+
 import Foundation
-import CommonCrypto
 
-extension String: Error {}
-
-extension String: LocalizedError {
-    public var errorDescription: String? { self }
-}
-
-extension Date {
-    var string: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd-MM-yyyy HH:mm:ss"
-        return dateFormatter.string(from: self)
-    }
-}
-
-extension Data {
-    public var SHA256hash: Self {
-        var hash = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
-        self.withUnsafeBytes {
-            _ = CC_SHA256($0.baseAddress, CC_LONG(self.count), &hash)
-        }
-        return Self(hash)
-    }
-    
-    public var SHA256hashString: String {
-        self.SHA256hash.map { String(format: "%02X", $0) }.joined()
-    }
-}
-
-struct FileEvent {
-    let fileName: String
-    let fileURL: URL
-    let type: EventType
-    let checksum: String?
-    let when = Date().string
-}
-
-extension FileEvent {
-    enum EventType {
-        case write
-        case delete
-        case renamed(oldName: String)
-        case moved(oldURL: URL)
-        case newFile
-        case error
-    }
-}
-
-extension FileEvent: CustomStringConvertible {
-    var description: String {
-        switch type {
-        case .write:
-            return """
-            
-            🔔 WRITE at \(when)
-                📄 filename: \(fileName)
-                📁 location: \(fileURL.path)
-                🧮 checksum: \(checksum!)
-            """
-        case .delete:
-            return """
-            
-            🔔 DELETE at \(when)
-                📄 filename: \(fileName)
-                📁 location: \(fileURL.path)
-            """
-        case .renamed(let oldName):
-            return """
-            
-            🔔 RENAMED at \(when)
-                📄 old filename: \(oldName)
-                🆕 new filename: \(fileName)
-                📁 location: \(fileURL.path)
-                🧮 checksum: \(checksum!)
-            """
-        case .moved(let oldLocation):
-            return """
-            
-            🔔 MOVED at \(when)
-                📄 filename: \(fileName)
-                📁 old location: \(oldLocation.path)
-                🆕 new location: \(fileURL.path)
-            """
-        case .newFile:
-            return """
-            
-            🔔 NEW FILE at \(when)
-                📄 filename: \(fileName)
-                📁 location: \(fileURL.path)
-                🧮 checksum: \(checksum!)
-            """
-        case .error:
-            return ""
-        }
-    }
-}
-
-struct FilterFlag: OptionSet {
-    
-    let rawValue: RawValue
-    
-    static let notSpecified = FilterFlag([])
-    static let write = FilterFlag(rawValue: UInt32(NOTE_WRITE))
-    static let delete = FilterFlag(rawValue: UInt32(NOTE_DELETE))
-    static let rename = FilterFlag(rawValue: UInt32(NOTE_RENAME))
-    
-    static let all: FilterFlag = [.write, .delete, .rename]
-}
-
-extension FilterFlag {
-    typealias RawValue = UInt32
+public extension DirectoryEvents {
+    typealias Path = String
+    typealias FileDescriptor = Int32
 }
 
 public class DirectoryEvents {
@@ -299,18 +198,4 @@ public class DirectoryEvents {
         )
         return flag
     }
-    
 }
-
-public extension DirectoryEvents {
-    typealias Path = String
-    typealias FileDescriptor = Int32
-}
-
-do {
-    try DirectoryEvents(watch: "Downloads/DEKitTest") { print($0) }
-} catch  {
-    print(error.localizedDescription)
-}
-
-RunLoop.current.run()
