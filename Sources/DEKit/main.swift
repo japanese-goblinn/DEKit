@@ -43,6 +43,7 @@ extension FileEvent {
         case delete
         case renamed
         case moved
+        case newFile
         case error
     }
 }
@@ -65,7 +66,7 @@ struct FilterFlag: OptionSet {
     
     let rawValue: RawValue
     
-    static let error = FilterFlag([])
+    static let notSpecified = FilterFlag([])
     static let write = FilterFlag(rawValue: UInt32(NOTE_WRITE))
     static let delete = FilterFlag(rawValue: UInt32(NOTE_DELETE))
     static let rename = FilterFlag(rawValue: UInt32(NOTE_RENAME))
@@ -117,13 +118,18 @@ public class DirectoryEvents {
         let descriptor = openForEventsAndGetDescriptor(at: directoryURL)
         guard descriptor > 0 else { throw "⛔️ Directory not found" }
         watchedDirectory = descriptor
+        createEventAtKernelQueue(from: watchedDirectory)
         try startReceivingChanges(at: directoryURL)
     }
     
     private func startReceivingChanges(at directory: URL) throws {
-        try fileManager.contentsOfDirectory(atPath: directory.path).forEach {
-            addToWatch(at: directory.appendingPathComponent($0))
-        }
+        try filesURLs(from: directory).forEach { addToWatch(at: $0) }
+    }
+    
+    private func filesURLs(from directory: URL) throws -> [URL]  {
+        return try fileManager
+            .contentsOfDirectory(atPath: directory.path)
+            .map { directory.appendingPathComponent($0) }
     }
     
     private func openForEventsAndGetDescriptor(at pathURL: URL) -> FileDescriptor {
@@ -193,16 +199,39 @@ public class DirectoryEvents {
         }
     }
     
+    private func checkNewFiles(at directory: FileDescriptor) {
+        let path = pathURL(for: directory)
+        guard let newURLs = try? filesURLs(from: path) else { return }
+        let oldURLs = watchedFiles.values
+        guard newURLs.count != oldURLs.count else { return }
+        var checksum: String?
+        for url in newURLs {
+            if oldURLs.contains(url) { continue }
+            addToWatch(at: url)
+            calculateChecksum(&checksum, of: url)
+            handler(
+                FileEvent(
+                    fileName: url.lastPathComponent,
+                    fileURL: url,
+                    type: .newFile,
+                    checksum: checksum
+                )
+            )
+        }
+    }
+    
     private func handleResult(of event: kevent) -> FilterFlag {
         
         let descriptor = FileDescriptor(event.ident)
         let flag = FilterFlag(rawValue: UInt32(event.fflags))
         
         if descriptor == watchedDirectory {
-            return flag
+            guard flag.contains(.write) else { return .notSpecified }
+            checkNewFiles(at: descriptor)
+            return .notSpecified
         }
         
-        guard var fileURL = watchedFiles[descriptor] else { return .error }
+        guard var fileURL = watchedFiles[descriptor] else { return .notSpecified }
         
         var checksum: String?
         var eventType: FileEvent.EventType = .error
