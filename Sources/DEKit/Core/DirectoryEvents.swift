@@ -7,9 +7,17 @@
 
 import Foundation
 
+// MARK: - Typeasliases
 public extension DirectoryEvents {
     typealias Path = String
     typealias FileDescriptor = Int32
+}
+
+// MARK: - API
+public extension DirectoryEvents {
+    func changeWatchedDirectory(to newDirectoryPath: Path) throws {
+        try watchDirectory(at: newDirectoryPath)
+    }
 }
 
 public class DirectoryEvents {
@@ -40,12 +48,7 @@ public class DirectoryEvents {
         closeWatched()
     }
     
-    private func closeWatched() {
-        watchedFiles.keys.forEach { close($0) }
-        close(watchedDirectory)
-    }
-    
-    public func watchDirectory(at path: Path) throws {
+    private func watchDirectory(at path: Path) throws {
         closeWatched()
         watchedFiles.removeAll()
         let directoryURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(path)
@@ -55,6 +58,11 @@ public class DirectoryEvents {
         watchedDirectory = descriptor
         createEventAtKernelQueue(from: watchedDirectory)
         try startReceivingChanges(at: directoryURL)
+    }
+
+    private func closeWatched() {
+        watchedFiles.keys.forEach { close($0) }
+        close(watchedDirectory)
     }
     
     private func startReceivingChanges(at directory: URL) throws {
