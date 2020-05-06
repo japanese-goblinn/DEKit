@@ -116,7 +116,7 @@ public class DirectoryEvents {
         var isDirectory: ObjCBool = false
         let fileExists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
         if !fileExists {
-            throw "⛔️ Invalid path"
+            throw "⛔️ \(url.path) is invalid. Wrong path spelling or directory is not exist"
         }
         if !isDirectory.boolValue {
             throw "⛔️ Not a directory"
