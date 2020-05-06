@@ -1,7 +1,7 @@
 import Foundation
 
 do {
-    try DirectoryEvents(watch: "Downloads/DEKitTest") { print($0) }
+    try DirectoryEvents(watch: "Downloads/DEKitTest")
 } catch  {
     print(error.localizedDescription)
 }

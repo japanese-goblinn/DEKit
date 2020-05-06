@@ -35,7 +35,10 @@ public class DirectoryEvents {
     private let handler: (FileEvent) -> Void
     
     @discardableResult
-    init(watch directoryPath: Path, with handler: @escaping (FileEvent) -> Void) throws {
+    init(
+        watch directoryPath: Path,
+        with handler: @escaping (FileEvent) -> Void = { print($0) }
+    ) throws {
         self.handler = handler
         kernelQueue = kqueue()
         guard kernelQueue >= 0 else { throw "⛔️ Failed to create kernel queue" }
