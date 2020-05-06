@@ -55,7 +55,7 @@ public class DirectoryEvents {
         closeWatched()
         watchedFiles.removeAll()
         let directoryURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(path)
-        try checkPath(directoryURL)
+        try checkDirectoryPath(directoryURL)
         let descriptor = openForEventsAndGetDescriptor(at: directoryURL)
         guard descriptor > 0 else { throw "⛔️ Directory not found" }
         print("\n📁 Started to watch events from \(directoryURL.lastPathComponent)/")
@@ -112,7 +112,7 @@ public class DirectoryEvents {
         kevent(kernelQueue, &queueEvent, 1, nil, 0, nil)
     }
         
-    private func checkPath(_ url: URL) throws {
+    private func checkDirectoryPath(_ url: URL) throws {
         var isDirectory: ObjCBool = false
         let fileExists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
         if !fileExists {
