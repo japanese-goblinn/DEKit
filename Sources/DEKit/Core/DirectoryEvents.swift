@@ -63,9 +63,16 @@ public class DirectoryEvents {
         createEventAtKernelQueue(from: watchedDirectory)
         try startReceivingChanges(at: directoryURL)
     }
+    
+    private func closeFile(_ desctiptor: FileDescriptor) {
+        guard let url = watchedFiles[desctiptor] else { return }
+        watchedFiles[desctiptor] = nil
+        close(desctiptor)
+        print("\n🏁 \(url.lastPathComponent) is no longer watched")
+    }
 
     private func closeWatched() {
-        watchedFiles.keys.forEach { close($0) }
+        watchedFiles.keys.forEach { closeFile($0) }
         close(watchedDirectory)
     }
     
@@ -180,6 +187,7 @@ public class DirectoryEvents {
             
         if flag.contains(.delete) {
             eventType = .delete
+            closeFile(descriptor)
         }
         if flag.contains(.rename) {
             let newFileURL = pathURL(for: descriptor)
