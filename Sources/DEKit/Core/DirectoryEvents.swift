@@ -157,6 +157,7 @@ public class DirectoryEvents {
                     checksum: checksum
                 )
             )
+            break
         }
     }
     
