@@ -58,6 +58,7 @@ public class DirectoryEvents {
         try checkPath(directoryURL)
         let descriptor = openForEventsAndGetDescriptor(at: directoryURL)
         guard descriptor > 0 else { throw "⛔️ Directory not found" }
+        print("\n📁 Started to watch events from \(directoryURL.lastPathComponent)/")
         watchedDirectory = descriptor
         createEventAtKernelQueue(from: watchedDirectory)
         try startReceivingChanges(at: directoryURL)
