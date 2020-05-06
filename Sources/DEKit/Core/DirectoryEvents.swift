@@ -7,7 +7,7 @@
 
 import Foundation
 
-// MARK: - Typeasliases
+// MARK: - Typealiases
 public extension DirectoryEvents {
     typealias Path = String
     typealias FileDescriptor = Int32
