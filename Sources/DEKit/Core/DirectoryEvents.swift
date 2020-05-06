@@ -83,7 +83,6 @@ public class DirectoryEvents {
     private func filesURLs(from directory: URL) throws -> [URL]  {
         return try fileManager
             .contentsOfDirectory(at: directory, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-            .map { $0 }
     }
     
     private func openForEventsAndGetDescriptor(at pathURL: URL) -> FileDescriptor {
