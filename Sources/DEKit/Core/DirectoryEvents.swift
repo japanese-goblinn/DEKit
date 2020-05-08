@@ -15,7 +15,7 @@ public extension DirectoryEvents {
 
 // MARK: - API
 public extension DirectoryEvents {
-    func changeWatchedDirectory(to newDirectoryPath: Path) throws {
+    func watchAnotherDirectory(at newDirectoryPath: Path) throws {
         try watchDirectory(at: newDirectoryPath)
     }
 }
