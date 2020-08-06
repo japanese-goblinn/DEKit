@@ -19,7 +19,7 @@ public extension DirectoryEvents {
         try watchDirectory(at: newDirectoryPath)
     }
     
-    func stopWatching() {
+    func stopReceiving() {
         deinitNeeded = true
     }
 }
