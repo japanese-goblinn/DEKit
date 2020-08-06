@@ -12,7 +12,7 @@ try DirectoryEvents(watch: "Downloads/DEKitTest") { event in
 }
 
 let de = try DirectoryEvents(watch: "Downloads/DEKitTest")
-de.stopWatching() // call this method to explicitly finish watching directory and destroy DirectoryEvents object
+de.stopReceiving() // call this method to explicitly finish watching events in directory and destroy DirectoryEvents object
 ```
 
 With this code
