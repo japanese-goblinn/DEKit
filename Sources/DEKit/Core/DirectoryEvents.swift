@@ -18,6 +18,10 @@ public extension DirectoryEvents {
     func watchAnotherDirectory(at newDirectoryPath: Path) throws {
         try watchDirectory(at: newDirectoryPath)
     }
+    
+    func stopWatching() {
+        deinitNeeded = true
+    }
 }
 
 public class DirectoryEvents {
@@ -32,6 +36,8 @@ public class DirectoryEvents {
     
     private var watchedDirectory: FileDescriptor = -1
     
+    private var deinitNeeded = false
+    
     private let handler: (FileEvent) -> Void
     
     @discardableResult
@@ -45,7 +51,7 @@ public class DirectoryEvents {
         try watchDirectory(at: directoryPath)
         events.async(execute: fileEventsWatcher)
     }
-
+    
     deinit {
         close(kernelQueue)
         closeWatched()
@@ -53,7 +59,6 @@ public class DirectoryEvents {
     
     private func watchDirectory(at path: Path) throws {
         closeWatched()
-        watchedFiles.removeAll()
         let directoryURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(path)
         try checkDirectoryPath(directoryURL)
         let descriptor = openForEventsAndGetDescriptor(at: directoryURL)
@@ -134,6 +139,7 @@ public class DirectoryEvents {
         var timeout = timespec(tv_sec: 1, tv_nsec: 0)
         while true {
             let amountOfEvents = kevent(kernelQueue, nil, 0, &event, 1, &timeout)
+            if deinitNeeded { break }
             guard amountOfEvents > 0 && event.filter == EVFILT_VNODE && event.fflags > 0
                 else { continue }
             handleResult(of: event)
@@ -169,11 +175,14 @@ public class DirectoryEvents {
     }
     
     private func handleResult(of event: kevent) {
-        
         let descriptor = FileDescriptor(event.ident)
         let flag = FilterFlag(rawValue: UInt32(event.fflags))
         
         if descriptor == watchedDirectory {
+            if flag.contains(.delete) {
+                deinitNeeded = true
+                return
+            }
             guard flag.contains(.write) else { return }
             checkNewFiles(at: descriptor)
             return
