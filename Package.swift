@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "DEKit",
     platforms: [
-        .macOS(.v10_13)
+        .macOS(.v10_10)
     ],
     products: [
         .library(
