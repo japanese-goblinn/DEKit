@@ -39,23 +39,7 @@ you will receive this output
 
 In Xcode go to `File -> Swift Packages -> Add Package Dependency` and paste in the repo's url: `https://github.com/japanese-goblinn/DEKit.git`
 
-### `Swift Package`
-
-```swift
-let package = Package(
-    name: "Package",
-    dependencies: [
-        .package(url: "https://github.com/japanese-goblinn/DEKit.git", from: "1.2")
-    ],
-    targets: [
-        .target(
-            name: "Package",
-            dependencies: ["DEKit"])
-    ]
-)
-```
-
-## Requirments
+#### Requirments
 
 Please add read permissions for folders that you want to watch in `.entitlements` file
 
@@ -70,4 +54,20 @@ Please add read permissions for folders that you want to watch in `.entitlements
 <true/>
 <key>com.apple.security.files.downloads.read-only</key>
 <true/>
+```
+
+### `Swift Package`
+
+```swift
+let package = Package(
+    name: "Package",
+    dependencies: [
+        .package(url: "https://github.com/japanese-goblinn/DEKit.git", from: "1.2.0")
+    ],
+    targets: [
+        .target(
+            name: "Package",
+            dependencies: ["DEKit"])
+    ]
+)
 ```
