@@ -41,7 +41,7 @@ public class DirectoryEvents {
     private let handler: (FileEvent) -> Void
     
     @discardableResult
-    init(
+    public init(
         watch directoryPath: Path,
         with handler: @escaping (FileEvent) -> Void = { print($0) }
     ) throws {

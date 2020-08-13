@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct FileEvent {
+public struct FileEvent {
     let fileName: String
     let fileURL: URL
     let type: EventType
@@ -27,7 +27,7 @@ extension FileEvent {
 }
 
 extension FileEvent: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch type {
         case .write:
             return """
