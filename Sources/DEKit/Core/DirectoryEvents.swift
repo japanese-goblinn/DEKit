@@ -15,10 +15,14 @@ public extension DirectoryEvents {
 
 // MARK: - API
 public extension DirectoryEvents {
+    /// Change watched directory to another one
+    /// - Parameter newDirectoryPath: path to directory that now will be watched for file events
+    /// - Throws: when directory path is invalid or no permission to read from directory
     func watchAnotherDirectory(at newDirectoryPath: Path) throws {
         try watchDirectory(at: newDirectoryPath)
     }
     
+    /// Explicitly finish watching directory and destroy DirectoryEvents object
     func stopReceiving() {
         deinitNeeded = true
     }
