@@ -62,7 +62,7 @@ public class DirectoryEvents {
         let directoryURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(path)
         try checkDirectoryPath(directoryURL)
         let descriptor = openForEventsAndGetDescriptor(at: directoryURL)
-        guard descriptor > 0 else { throw "⛔️ Directory not found" }
+        guard descriptor > 0 else { throw "⛔️ Can't open file descriptor. Access denied" }
         print("\n📁 Started to watch events from \(directoryURL.lastPathComponent)/")
         watchedDirectory = descriptor
         createEventAtKernelQueue(from: watchedDirectory)
