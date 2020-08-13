@@ -8,6 +8,11 @@ let package = Package(
     platforms: [
         .macOS(.v10_13)
     ],
+    products: [
+        .library(
+            name: "DEKit", 
+            targets: ["DEKit"])
+    ],
     dependencies: [],
     targets: [
         .target(
