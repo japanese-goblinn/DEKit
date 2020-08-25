@@ -1,5 +1,9 @@
 # DEKit
 
+[![License](https://img.shields.io/github/license/japanese-goblinn/DEKit.svg)](https://github.com/japanese-goblinn/DEKit/blob/master/LICENSE.md)
+![Swift](https://img.shields.io/badge/Swift-5.2-F16D39.svg)
+![Version](https://img.shields.io/badge/platfrom-macOS-blue.svg)
+
 Library to watch changes in directory
 
 ```swift
